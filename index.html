@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Banca</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Simulador de Banca</h1>
+
+        <!-- Valor Atual da Banca -->
+        <label for="current-bank">Valor Atual da Banca:</label>
+        <input type="text" id="current-bank" value="0.00" readonly />
+
+        <!-- Valor Inicial da Banca -->
+        <label for="bank">Valor Inicial da Banca:</label>
+        <input type="number" id="bank" placeholder="Insira o valor inicial da banca" />
+
+        <!-- Valor da Aposta -->
+        <label for="stake">Valor da Aposta:</label>
+        <input type="number" id="stake" placeholder="Valor apostado" />
+
+        <!-- Odd da Aposta -->
+        <label for="odd">Odd da Aposta:</label>
+        <input type="number" step="0.01" id="odd" placeholder="Odd da aposta" />
+
+        <!-- Descrição -->
+        <label for="description">Descrição da Aposta:</label>
+        <input type="text" id="description" placeholder="Descrição da aposta" />
+
+        <!-- Botões -->
+        <div>
+            <button class="win-btn" onclick="addWin()">Vitória</button>
+            <button class="loss-btn" onclick="addLoss()">Derrota</button>
+        </div>
+
+        <!-- Filtro de Pesquisa -->
+        <h2>Pesquisar Histórico</h2>
+        <input type="text" id="search-bar" placeholder="Pesquisar histórico..." oninput="filterHistory()" />
+
+        <!-- Filtro de Vitória/Derrota -->
+        <h2>Filtrar por Resultado</h2>
+        <select id="result-filter" onchange="filterByResult()">
+            <option value="">Mostrar Todos</option>
+            <option value="win">Somente Vitórias</option>
+            <option value="loss">Somente Derrotas</option>
+        </select>
+
+        <!-- Histórico -->
+        <h2>Histórico</h2>
+        <ul id="history"></ul>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>
