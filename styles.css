@@ -6,7 +6,8 @@ body {
 }
 
 .container {
-    width: 100%; /* Agora ocupa 100% da largura da tela */
+    width: 100%;
+    max-width: 800px;
     margin: 0 auto;
     background: #fff;
     padding: 20px;
@@ -16,30 +17,27 @@ body {
 
 h1, h2 {
     text-align: center;
+    color: #333;
 }
 
-input {
-    width: calc(100% - 22px);
+input, select {
+    width: 100%;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 5px;
-}
-
-input[readonly] {
-    background-color: #f0f0f0;
-    font-weight: bold;
+    font-size: 16px;
 }
 
 button {
-    width: 45%; /* Faz os botões ocuparem 45% da largura */
+    width: 45%;
     padding: 10px;
     margin: 5px;
     border: none;
     border-radius: 5px;
     color: white;
     cursor: pointer;
-    display: inline-block; /* Faz com que os botões fiquem lado a lado */
+    display: inline-block;
     text-align: center;
 }
 
@@ -55,10 +53,13 @@ button:hover {
     background-color: #dc3545;
 }
 
-/* Centraliza os botões de Vitória e Derrota */
-button.container {
-    display: flex;
-    justify-content: center;
+.buttons {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.filter {
+    margin-bottom: 15px;
 }
 
 ul#history {
@@ -68,10 +69,13 @@ ul#history {
 }
 
 ul#history li {
-    padding: 10px;
-    margin-bottom: 5px;
+    padding: 12px;
+    margin-bottom: 10px;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 ul#history .win {
@@ -82,4 +86,23 @@ ul#history .win {
 ul#history .loss {
     background-color: #f8d7da;
     color: #721c24;
+}
+
+ul#history li .amount {
+    font-weight: bold;
+}
+
+ul#history li .details {
+    font-size: 14px;
+    color: #555;
+}
+
+ul#history li .description {
+    font-style: italic;
+    font-size: 14px;
+}
+
+ul#history li .actions {
+    display: flex;
+    gap: 10px;
 }

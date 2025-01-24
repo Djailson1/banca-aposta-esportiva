@@ -1,4 +1,5 @@
 let bank = 0;
+let historyData = []; // Armazena todos os registros de histórico
 
 // Atualiza a banca inicial
 document.getElementById("bank").addEventListener("input", function () {
@@ -15,7 +16,9 @@ function addWin() {
         const profit = stake * odd - stake;
         bank += profit;
         updateBankDisplay();
-        addToHistory("Vitória", `R$ ${formatCurrency(profit)}`, "win", description, odd, stake);
+        const record = { type: "win", amount: profit, stake, odd, description };
+        historyData.push(record);
+        addToHistory(record);
         resetFields();
     } else {
         alert("Por favor, insira valores válidos.");
@@ -29,7 +32,9 @@ function addLoss() {
     if (stake > 0) {
         bank -= stake;
         updateBankDisplay();
-        addToHistory("Derrota", `R$ ${formatCurrency(stake)}`, "loss", description, 0, stake);
+        const record = { type: "loss", amount: -stake, stake, odd: 0, description };
+        historyData.push(record);
+        addToHistory(record);
         resetFields();
     } else {
         alert("Por favor, insira um valor de aposta válido.");
@@ -40,20 +45,24 @@ function updateBankDisplay() {
     document.getElementById("current-bank").value = formatCurrency(bank);
 }
 
-function addToHistory(type, amount, className, description, odd, stake) {
+function addToHistory(record) {
     const historyList = document.getElementById("history");
     const listItem = document.createElement("li");
-    listItem.className = className;
+    listItem.className = record.type;
 
-    let historyText = `${type}: ${amount}`;
+    listItem.innerHTML = `
+        <div class="amount">${formatCurrency(record.amount)}</div>
+        <div class="details">
+            <span>Odd: ${record.odd > 0 ? record.odd : "-"}</span> | 
+            <span>Aposta: ${formatCurrency(record.stake)}</span>
+        </div>
+        <div class="description">${record.description || "Sem descrição"}</div>
+        <div class="actions">
+            <button onclick="editHistory(${historyData.length - 1})">Editar</button>
+            <button onclick="deleteHistory(${historyData.length - 1})">Deletar</button>
+        </div>
+    `;
 
-    if (description) {
-        historyText += ` | Descrição: ${description}`;
-    }
-
-    historyText += ` | Odd: ${odd} | Valor Apostado: R$ ${formatCurrency(stake)}`;
-
-    listItem.textContent = historyText;
     historyList.appendChild(listItem);
 }
 
@@ -68,31 +77,35 @@ function formatCurrency(value) {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '').replace('.', ',');
 }
 
-// Filtro de Pesquisa
+// Função para filtrar o histórico
 function filterHistory() {
-    const searchTerm = document.getElementById("search-bar").value.toLowerCase();
-    const historyItems = document.querySelectorAll("#history li");
+    const search = document.getElementById("search").value.toLowerCase();
+    const filterType = document.getElementById("filter-type").value;
 
-    historyItems.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-            item.style.display = "";
-        } else {
-            item.style.display = "none";
-        }
+    const filteredData = historyData.filter(item => {
+        const matchType = filterType ? item.type === filterType : true;
+        const matchSearch = item.description.toLowerCase().includes(search) || 
+                            item.amount.toString().includes(search) ||
+                            item.stake.toString().includes(search) ||
+                            item.odd.toString().includes(search);
+        return matchType && matchSearch;
     });
+
+    renderHistory(filteredData);
 }
 
-// Filtro por Resultado (Vitória/Derrota)
-function filterByResult() {
-    const resultFilter = document.getElementById("result-filter").value;
-    const historyItems = document.querySelectorAll("#history li");
+function renderHistory(data) {
+    const historyList = document.getElementById("history");
+    historyList.innerHTML = "";
+    data.forEach(record => addToHistory(record));
+}
 
-    historyItems.forEach(item => {
-        if (resultFilter === "" || item.classList.contains(resultFilter)) {
-            item.style.display = "";
-        } else {
-            item.style.display = "none";
-        }
-    });
+function editHistory(index) {
+    // Implemente a função de edição do histórico se necessário
+    alert("Função de editar não implementada ainda.");
+}
+
+function deleteHistory(index) {
+    historyData.splice(index, 1);
+    renderHistory(historyData);
 }

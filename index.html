@@ -5,6 +5,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Banca</title>
     <link rel="stylesheet" href="styles.css">
+    <script type="module">
+        // Configuração do Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBYiN2MLJJ3DVe0-9zGaJIHNQBM_APoZOc",
+          authDomain: "banca-esportiva.firebaseapp.com",
+          projectId: "banca-esportiva",
+          storageBucket: "banca-esportiva.firebasestorage.app",
+          messagingSenderId: "589390536454",
+          appId: "1:589390536454:web:223da1655879e0a072c887"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Definir a variável da banca
+        let bank = 0;
+
+        // Funções de adicionar vitória e derrota
+        window.addWin = function() {
+            const stake = parseFloat(document.getElementById("stake").value) || 0;
+            const odd = parseFloat(document.getElementById("odd").value) || 0;
+            const description = document.getElementById("description").value.trim();
+        
+            if (stake > 0 && odd > 0) {
+                const profit = stake * odd - stake;
+                bank += profit;
+                updateBankDisplay();
+                addToHistory("Vitória", `R$ ${formatCurrency(profit)}`, "win", description);
+                
+                // Salvar no Firebase
+                console.log("Adicionando vitória ao Firestore...");
+                addDoc(collection(db, "historico"), {
+                    type: "Vitória",
+                    amount: profit,
+                    description: description,
+                    stake: stake,
+                    odd: odd,
+                    timestamp: serverTimestamp()
+                })
+                .then(() => {
+                    console.log("Dados salvos com sucesso no Firestore!");
+                })
+                .catch((error) => {
+                    console.error("Erro ao salvar dados no Firestore: ", error);
+                });
+
+                resetFields();
+            } else {
+                alert("Por favor, insira valores válidos.");
+            }
+        };
+
+        window.addLoss = function() {
+            const stake = parseFloat(document.getElementById("stake").value) || 0;
+            const description = document.getElementById("description").value.trim();
+        
+            if (stake > 0) {
+                bank -= stake;
+                updateBankDisplay();
+                addToHistory("Derrota", `R$ ${formatCurrency(stake)}`, "loss", description);
+                
+                // Salvar no Firebase
+                console.log("Adicionando derrota ao Firestore...");
+                addDoc(collection(db, "historico"), {
+                    type: "Derrota",
+                    amount: stake,
+                    description: description,
+                    stake: stake,
+                    odd: 0, // No caso de derrota, a odd pode ser 0
+                    timestamp: serverTimestamp()
+                })
+                .then(() => {
+                    console.log("Dados salvos com sucesso no Firestore!");
+                })
+                .catch((error) => {
+                    console.error("Erro ao salvar dados no Firestore: ", error);
+                });
+
+                resetFields();
+            } else {
+                alert("Por favor, insira um valor de aposta válido.");
+            }
+        };
+
+        // Função para atualizar o valor da banca
+        function updateBankDisplay() {
+            document.getElementById("current-bank").value = formatCurrency(bank);
+        }
+
+        // Função para formatar valores em moeda
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace('R$', '').replace('.', ',');
+        }
+
+        // Função para resetar os campos após vitória ou derrota
+        function resetFields() {
+            document.getElementById("stake").value = "";
+            document.getElementById("odd").value = "";
+            document.getElementById("description").value = "";
+        }
+
+        // Função para adicionar ao histórico
+        function addToHistory(type, amount, className, description) {
+            const historyList = document.getElementById("history");
+            const listItem = document.createElement("li");
+            listItem.className = className;
+        
+            if (description) {
+                listItem.textContent = `${type}: ${amount} | Descrição: ${description}`;
+            } else {
+                listItem.textContent = `${type}: ${amount}`;
+            }
+        
+            historyList.appendChild(listItem);
+        }
+
+        // Função para recuperar os dados do Firestore e exibir no histórico
+        function loadHistory() {
+            console.log("Carregando histórico...");
+            const querySnapshot = getDocs(collection(db, "historico"));
+            querySnapshot.then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const amountFormatted = `R$ ${formatCurrency(data.amount)}`;
+                    const description = data.description || "Sem descrição";
+                    addToHistory(data.type, amountFormatted, data.type === "Vitória" ? "win" : "loss", description);
+                });
+            }).catch((error) => {
+                console.error("Erro ao carregar histórico: ", error);
+            });
+        }
+
+        // Chama a função para carregar o histórico ao carregar a página
+        window.onload = loadHistory;
+    </script>
 </head>
 <body>
     <div class="container">
@@ -36,22 +175,9 @@
             <button class="loss-btn" onclick="addLoss()">Derrota</button>
         </div>
 
-        <!-- Filtro de Pesquisa -->
-        <h2>Pesquisar Histórico</h2>
-        <input type="text" id="search-bar" placeholder="Pesquisar histórico..." oninput="filterHistory()" />
-
-        <!-- Filtro de Vitória/Derrota -->
-        <h2>Filtrar por Resultado</h2>
-        <select id="result-filter" onchange="filterByResult()">
-            <option value="">Mostrar Todos</option>
-            <option value="win">Somente Vitórias</option>
-            <option value="loss">Somente Derrotas</option>
-        </select>
-
         <!-- Histórico -->
         <h2>Histórico</h2>
         <ul id="history"></ul>
     </div>
-    <script src="scripts.js"></script>
 </body>
 </html>
